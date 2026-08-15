@@ -1,0 +1,28 @@
+symbol: ETCUSDT
+category: linear
+timeframes:
+  primary: "15"
+  refine: "5"
+  higher: "60"
+use_refinement: false
+confluence_threshold: 0.65
+weights:
+  trending:
+    ema_alignment: 0.25
+    adx_strength: 0.20
+    macd_momentum: 0.15
+    rsi_bias: 0.10
+    vwap_position: 0.10
+    obv_trend: 0.10
+    volume_confirmation: 0.10
+  ranging:
+    bb_reversion: 0.25
+    stochrsi_extreme: 0.20
+    rsi_reversion: 0.15
+    vwap_revert: 0.15
+    atr_compression: 0.15
+    volume_confirmation: 0.10
+spread:
+  max_bps: 12
+execution:
+  reconcile_interval_sec: 30

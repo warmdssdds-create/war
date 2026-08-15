@@ -1,0 +1,24 @@
+mode: testnet
+account:
+  max_leverage: 2
+  capital_base_usdt: 1000
+position_sizing:
+  risk_per_trade: 0.005
+  min_qty: 0.1
+  qty_step: 0.1
+  max_notional_usdt: 200
+stops:
+  atr_multiple: 1.6
+  structure_buffer: 0.001
+  reward_risk: 1.8
+breakeven:
+  enable: true
+  trigger_rr: 1.0
+trailing:
+  enable: true
+  atr_multiple: 1.2
+circuit_breakers:
+  daily_loss_limit: 0.03
+  weekly_loss_limit: 0.06
+  max_consecutive_losses: 3
+  pause_minutes: 120
