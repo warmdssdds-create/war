@@ -34,7 +34,7 @@ class HealthState:
         return d
 
     def update(self, **kwargs: Any) -> None:
-        """Thread-safe partial update of state fields."""
+        """Partial update of state fields (not thread-safe; use module-level update_state for concurrent access)."""
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)

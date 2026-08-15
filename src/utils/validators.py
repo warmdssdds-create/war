@@ -57,7 +57,7 @@ def validate_side(side: str) -> str:
     Raises:
         ValidationError: When *side* is not recognised.
     """
-    normalised = side.capitalize()
+    normalised = side.lower().capitalize()
     if normalised not in ("Buy", "Sell"):
         raise ValidationError(f"side must be 'Buy' or 'Sell', got {side!r}")
     return normalised
