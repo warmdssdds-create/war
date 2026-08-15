@@ -48,3 +48,4 @@ def test_daily_reset_clears_loss_streak() -> None:
     assert breaker.consecutive_losses == 2
     breaker.reset_daily()
     assert breaker.consecutive_losses == 0
+    assert breaker.paused_until is None

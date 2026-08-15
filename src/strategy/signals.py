@@ -33,6 +33,9 @@ def evaluate_signal(
         return SignalResult(side=None, regime=Regime.TRANSITIONAL, score=0.0, reason="unconfirmed")
 
     regime = classify_regime(frame_15m)
+    if regime == Regime.VOLATILITY_SPIKE:
+        return SignalResult(side=None, regime=regime, score=0.0, reason="volatility_pause")
+
     conf = score_confluence(frame_15m, regime, weights, threshold)
     if not conf.passed:
         return SignalResult(side=None, regime=regime, score=conf.score, reason="low_confluence")
@@ -46,8 +49,5 @@ def evaluate_signal(
             return SignalResult(side=None, regime=regime, score=conf.score, reason="5m_refine_reject")
         if side == "Sell" and r5.get("macd_hist", 0.0) >= 0:
             return SignalResult(side=None, regime=regime, score=conf.score, reason="5m_refine_reject")
-
-    if regime == Regime.VOLATILITY_SPIKE:
-        return SignalResult(side=None, regime=regime, score=conf.score, reason="volatility_pause")
 
     return SignalResult(side=side, regime=regime, score=conf.score, reason="ok")

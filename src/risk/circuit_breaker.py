@@ -47,6 +47,7 @@ class CircuitBreaker:
         """Reset daily stats."""
         self.daily_pnl = 0.0
         self.consecutive_losses = 0
+        self.paused_until = None
 
     def reset_weekly(self) -> None:
         """Reset weekly stats."""
