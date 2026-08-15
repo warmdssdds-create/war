@@ -33,3 +33,18 @@ def test_circuit_breaker_pauses_after_consecutive_losses() -> None:
     assert not breaker.is_paused()
     breaker.register_trade_result(-5)
     assert breaker.is_paused()
+
+
+def test_daily_reset_clears_loss_streak() -> None:
+    breaker = CircuitBreaker(
+        daily_loss_limit=0.03,
+        weekly_loss_limit=0.06,
+        max_consecutive_losses=3,
+        pause_minutes=30,
+        starting_equity=1000,
+    )
+    breaker.register_trade_result(-5)
+    breaker.register_trade_result(-5)
+    assert breaker.consecutive_losses == 2
+    breaker.reset_daily()
+    assert breaker.consecutive_losses == 0

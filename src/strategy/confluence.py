@@ -28,6 +28,8 @@ def score_confluence(
     row = frame.iloc[-1]
     trend_map = weights.get("trending", {})
     range_map = weights.get("ranging", {})
+    if regime in {Regime.TRANSITIONAL, Regime.VOLATILITY_SPIKE}:
+        return ConfluenceResult(score=0.0, passed=False)
     use_map = trend_map if regime == Regime.TRENDING else range_map
 
     conditions = {

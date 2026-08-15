@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -91,7 +92,10 @@ def run() -> None:
         starting_equity=float(risk_cfg["account"]["capital_base_usdt"]),
     )
 
-    alerter = TelegramAlerter(token=None, chat_id=None)
+    alerter = TelegramAlerter(
+        token=os.getenv("TELEGRAM_BOT_TOKEN"),
+        chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+    )
     logger.info("Bot started in %s mode for %s", "testnet" if testnet else "mainnet", strategy_cfg["symbol"])
 
     last_reconcile = 0.0
@@ -104,12 +108,16 @@ def run() -> None:
         candles = fetcher.backfill_required(strategy_cfg["category"], strategy_cfg["symbol"])
         df15 = compute_indicators(candles["15"])
         df5 = compute_indicators(candles["5"]) if strategy_cfg.get("use_refinement", False) else None
+        last_start = df15.iloc[-1]["start"] if not df15.empty else None
+        confirmed = False
+        if last_start is not None:
+            confirmed = (last_start.to_pydatetime().timestamp() + 15 * 60) <= time.time()
 
         signal = evaluate_signal(
             frame_15m=df15,
             weights=strategy_cfg["weights"],
             threshold=float(strategy_cfg["confluence_threshold"]),
-            confirmed=True,
+            confirmed=confirmed,
             frame_5m=df5,
             use_refinement=bool(strategy_cfg.get("use_refinement", False)),
         )
