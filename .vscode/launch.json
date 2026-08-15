@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run trading bot (testnet)",
+      "type": "python",
+      "request": "launch",
+      "module": "src.main",
+      "args": ["--env", "testnet"],
+      "justMyCode": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Run backtest",
+      "type": "python",
+      "request": "launch",
+      "module": "src.backtest",
+      "args": ["data/candles_15m.csv"],
+      "justMyCode": true,
+      "console": "integratedTerminal"
+    }
+  ]
+}
