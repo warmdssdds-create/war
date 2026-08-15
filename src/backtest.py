@@ -410,10 +410,12 @@ def _generate_sample_candles(n: int = 500, base_price: float = 20.0, seed: int =
     for _ in range(n - 1):
         closes.append(max(closes[-1] * (1 + rng.normal(0, 0.005)), 0.01))
     closes_arr = np.array(closes)
-    highs = closes_arr * (1 + np.abs(rng.normal(0, 0.003, n)))
-    lows = closes_arr * (1 - np.abs(rng.normal(0, 0.003, n)))
     opens = np.roll(closes_arr, 1)
     opens[0] = closes_arr[0]
+    # Build valid OHLC: high/low are derived from open+close so candle structure is consistent.
+    spread = np.abs(rng.normal(0, 0.003, n))
+    highs = np.maximum(opens, closes_arr) * (1 + spread)
+    lows = np.minimum(opens, closes_arr) * (1 - spread)
     volumes = np.abs(rng.normal(5_000, 1_000, n))
     return pd.DataFrame({"start": timestamps, "open": opens, "high": highs, "low": lows, "close": closes_arr, "volume": volumes})
 
@@ -453,7 +455,8 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.candles is None:
-        print("No candle file supplied — using synthetic sample data (500 × 15m candles).")
+        import sys
+        print("No candle file supplied — using synthetic sample data (500 × 15m candles).", file=sys.stderr)
         candles_15m = _generate_sample_candles()
     else:
         candles_15m = _load_csv(args.candles)
