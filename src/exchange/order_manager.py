@@ -140,7 +140,7 @@ class OrderManager:
             record.updated_at = utc_now()
             record.exchange_order_id = str(item.get("orderId", record.exchange_order_id or "")) or record.exchange_order_id
             if record.status in {"Filled", "Cancelled", "Rejected", "Deactivated"} and record.remaining_qty <= 0:
-                record.status = record.status
+                self.active_orders.pop(link_id, None)
 
     def handle_partial_fill(self, link_id: str, filled_qty: float) -> bool:
         """Update partial-fill quantity and return whether the order is complete."""

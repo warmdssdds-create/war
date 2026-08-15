@@ -321,9 +321,9 @@ def compute_indicators(df: pd.DataFrame) -> pd.DataFrame:
     out["swing_low"] = detect_swing_lows(out, lookback=3)
     out["obv_divergence"] = 0
     if len(out) >= 25:
-        divergences: list[int] = [0] * len(out)
-        for idx in range(20, len(out)):
-            divergences[idx] = detect_obv_divergence(out.iloc[: idx + 1], lookback=min(20, idx + 1))
+        last_divergence = detect_obv_divergence(out, lookback=min(20, len(out)))
+        divergences = [0] * len(out)
+        divergences[-1] = last_divergence
         out["obv_divergence"] = divergences
     out["volatility_spike"] = out["atr_ratio"].fillna(0.0) > 1.8
     out["trend_bias"] = np.where(out["ema21"] >= out["ema55"], 1, -1)

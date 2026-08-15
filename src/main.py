@@ -293,14 +293,16 @@ class TradingBotApp:
         if response:
             self.health.set_status("last_order_response", str(response))
             if self.alerter is not None:
+                active_entries = self.order_manager.get_active_entries()
+                latest = active_entries[-1] if active_entries else None
                 self.alerter.send(
                     format_trade_alert(
                         symbol=self.strategy_cfg["symbol"],
                         side=signal_result.side,
-                        qty=float(self.order_manager.get_active_entries()[-1].qty) if self.order_manager.get_active_entries() else 0.0,
+                        qty=float(latest.qty) if latest else 0.0,
                         entry=float(last["close"]),
-                        sl=float(self.order_manager.get_active_entries()[-1].sl) if self.order_manager.get_active_entries() else 0.0,
-                        tp=float(self.order_manager.get_active_entries()[-1].tp) if self.order_manager.get_active_entries() else 0.0,
+                        sl=float(latest.sl) if latest else 0.0,
+                        tp=float(latest.tp) if latest else 0.0,
                         score=signal_result.score,
                     )
                 )

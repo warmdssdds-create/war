@@ -100,7 +100,7 @@ def classify_regime(frame: pd.DataFrame) -> Regime:
     if adx >= 25 and abs(plus_di - minus_di) >= 3:
         return Regime.TRENDING
     if adx >= 25:
-        return Regime.TRENDING
+        return Regime.TRANSITIONAL
     if adx <= 18:
         return Regime.RANGING
     return Regime.TRANSITIONAL
