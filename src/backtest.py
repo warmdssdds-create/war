@@ -400,22 +400,65 @@ def _load_csv(path: str) -> pd.DataFrame:
     return frame
 
 
+def _generate_sample_candles(n: int = 500, base_price: float = 20.0, seed: int = 42) -> pd.DataFrame:
+    """Generate synthetic 15m OHLCV candles for demo/CI use when no data file is supplied."""
+    rng = np.random.default_rng(seed)
+    freq = pd.tseries.frequencies.to_offset("15min")
+    start_ts = pd.Timestamp("2024-01-01", tz="UTC")
+    timestamps = [start_ts + i * freq for i in range(n)]  # type: ignore[operator]
+    closes = [base_price]
+    for _ in range(n - 1):
+        closes.append(max(closes[-1] * (1 + rng.normal(0, 0.005)), 0.01))
+    closes_arr = np.array(closes)
+    highs = closes_arr * (1 + np.abs(rng.normal(0, 0.003, n)))
+    lows = closes_arr * (1 - np.abs(rng.normal(0, 0.003, n)))
+    opens = np.roll(closes_arr, 1)
+    opens[0] = closes_arr[0]
+    volumes = np.abs(rng.normal(5_000, 1_000, n))
+    return pd.DataFrame({"start": timestamps, "open": opens, "high": highs, "low": lows, "close": closes_arr, "volume": volumes})
+
+
+def run_backtest(
+    candles_15m: pd.DataFrame,
+    candles_5m: pd.DataFrame | None = None,
+    symbol: str = "ETCUSDT",
+    initial_capital: float = 10_000.0,
+    threshold: float = 0.65,
+) -> BacktestResult:
+    """Run a backtest and return the result.  Convenience wrapper for external callers.
+
+    Example::
+
+        from src.backtest import run_backtest
+        result = run_backtest(my_dataframe)
+        print(result.win_rate, result.profit_factor)
+    """
+    config = BacktestConfig(symbol=symbol, initial_capital=initial_capital)
+    engine = EventDrivenBacktest(config=config, weights=_default_weights(), threshold=threshold)
+    return engine.run(candles_15m, candles_5m)
+
 
 def main() -> None:
-    """CLI entry point for standalone backtests."""
+    """CLI entry point for standalone backtests.
+
+    When called with no arguments a synthetic candle dataset is generated
+    automatically so that ``run_backtest.bat`` works out of the box.
+    """
     parser = argparse.ArgumentParser(description="Run ETCUSDT strategy backtest")
-    parser.add_argument("candles", help="CSV containing 15m candles")
+    parser.add_argument("candles", nargs="?", default=None, help="CSV containing 15m candles (omit to use synthetic sample data)")
     parser.add_argument("--candles-5m", default=None, help="Optional CSV containing 5m candles")
     parser.add_argument("--symbol", default="ETCUSDT")
     parser.add_argument("--capital", type=float, default=10_000.0)
     parser.add_argument("--threshold", type=float, default=0.65)
     args = parser.parse_args()
 
-    candles_15m = _load_csv(args.candles)
+    if args.candles is None:
+        print("No candle file supplied — using synthetic sample data (500 × 15m candles).")
+        candles_15m = _generate_sample_candles()
+    else:
+        candles_15m = _load_csv(args.candles)
     candles_5m = _load_csv(args.candles_5m) if args.candles_5m else None
-    config = BacktestConfig(symbol=args.symbol, initial_capital=args.capital)
-    engine = EventDrivenBacktest(config=config, weights=_default_weights(), threshold=args.threshold)
-    result = engine.run(candles_15m, candles_5m)
+    result = run_backtest(candles_15m, candles_5m, symbol=args.symbol, initial_capital=args.capital, threshold=args.threshold)
     print_metrics_report(result)
 
 
