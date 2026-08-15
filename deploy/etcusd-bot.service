@@ -1,0 +1,17 @@
+[Unit]
+Description=ETCUSD Bybit Trading Bot
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/etcusd-bot
+EnvironmentFile=/opt/etcusd-bot/.env
+ExecStart=/opt/etcusd-bot/.venv/bin/python -m src.main --env mainnet
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
